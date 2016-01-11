@@ -118,12 +118,12 @@
     UIFont *btnFont = [UIFont systemFontOfSize:19.0];
 
     self.photoLibraryBtn = [[UIButton alloc] initWithFrame:libraryBtnFrame];
-    [self.photoLibraryBtn setTitle:NSLocalizedString(@"Photo Library", nil) forState:UIControlStateNormal];
+    [self.photoLibraryBtn setTitle:NSLocalizedString(@"Photoalbum", nil) forState:UIControlStateNormal];
     self.photoLibraryBtn.titleLabel.font = btnFont;
     [self.photoLibraryBtn addTarget:self action:@selector(selectFromLibraryWasPressed) forControlEvents:UIControlEventTouchUpInside];
 
     self.cameraBtn = [[UIButton alloc] initWithFrame:cameraBtnFrame];
-    [self.cameraBtn setTitle:NSLocalizedString(@"Take Photo", nil) forState:UIControlStateNormal];
+    [self.cameraBtn setTitle:NSLocalizedString(@"Camera", nil) forState:UIControlStateNormal];
     self.cameraBtn.titleLabel.font = btnFont;
     [self.cameraBtn addTarget:self action:@selector(takePhotoWasPressed) forControlEvents:UIControlEventTouchUpInside];
 
@@ -182,7 +182,7 @@
     
     UIImageView *sel = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark.png"]];
     [sel setFrame:CGRectMake(95, 5, 25, 25)];
-    //[sel setBackgroundColor:[UIColor blackColor]];
+    [sel setBackgroundColor:[UIColor whiteColor]];
     
     if ([selectedPhotos containsObject:asset]) {
         [sel setImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark-Selected.png"]];
@@ -210,7 +210,7 @@
     if (selectedPhotos.count > 0) {
         [self.photoLibraryBtn setTitle:[NSString stringWithFormat:NSLocalizedString(@"Select %lu photos", nil), (unsigned long)selectedPhotos.count] forState:UIControlStateNormal];
     } else {
-        [self.photoLibraryBtn setTitle:NSLocalizedString(@"Image library", nil) forState:UIControlStateNormal];
+        [self.photoLibraryBtn setTitle:NSLocalizedString(@"Photoalbum", nil) forState:UIControlStateNormal];
     }
 }
 
