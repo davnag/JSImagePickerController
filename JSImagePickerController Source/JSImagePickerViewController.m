@@ -10,6 +10,10 @@
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <MobileCoreServices/UTCoreTypes.h>
 
+@implementation PhotoMetadata
+@synthesize date, location;
+@end
+
 #pragma mark - JSImagePickerViewController -
 
 @interface JSImagePickerViewController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
