@@ -49,6 +49,8 @@
 
 @property (nonatomic, readwrite) UIImagePickerControllerSourceType selectedSourceType;
 
+@property (nonatomic, strong) NSCache *imagesCache;
+
 @end
 
 @implementation JSImagePickerViewController
@@ -56,12 +58,14 @@
 @synthesize delegate;
 @synthesize transitionController;
 @synthesize selectedPhotos;
+@synthesize imagesCache;
 
 - (id)init
 {
     self = [super init];
     if (self) {
         self.assets = [[NSMutableArray alloc] init];
+        self.imagesCache = [[NSCache alloc] init];
         [self setupView];
     }
     return self;
@@ -181,24 +185,64 @@
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     JSPhotoCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
-
+    
     ALAsset *asset = self.assets[self.assets.count - 1 - indexPath.row];
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:[UIImage imageWithCGImage:[asset thumbnail]]];
-    imageView.clipsToBounds = YES;
-    imageView.contentMode = UIViewContentModeScaleAspectFill;
-    [cell addSubview:imageView];
+    NSString *path = [asset valueForProperty:ALAssetPropertyAssetURL];
     
-   // UIImageView *sel = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark.png"]];
+    UIImageView *imageView = [cell viewWithTag:1000];
     
-    UIImageView *sel = [[UIImageView alloc] init];
-    [sel setFrame:CGRectMake(95, 5, 25, 25)];
-    //[sel setBackgroundColor:[UIColor blackColor]];
-    
-    if ([selectedPhotos containsObject:asset]) {
-        [sel setImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark-Selected.png"]];
+    if(imageView == nil){
+        UIImageView *imageView = [[UIImageView alloc] init];
+        [imageView setTag:1000];
+        imageView.clipsToBounds = YES;
+        imageView.contentMode = UIViewContentModeScaleAspectFill;
+        imageView.frame = cell.bounds;
+        [cell addSubview:imageView];
     }
     
-    [cell addSubview:sel];
+    UIImage *fullImage = [self.imagesCache objectForKey:path];
+    if(fullImage) {
+        [imageView setImage:fullImage];
+    }else {
+        [imageView setImage:[UIImage imageWithCGImage:[asset thumbnail]]];
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            UIImage *tmpImage = [self.imagesCache objectForKey:path];
+            
+            if (tmpImage == nil) {
+                tmpImage = [[UIImage alloc] initWithCGImage:asset.defaultRepresentation.fullScreenImage];
+                [self.imagesCache setObject:tmpImage forKey:path];
+            }
+            
+            if ([cell viewWithTag:1000] != nil){
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if ([cell viewWithTag:1000]!= nil){
+                        UIImageView * tmpImageView = (UIImageView*)[cell viewWithTag:1000];
+                        tmpImageView.image = tmpImage;
+                    }
+                });
+            }
+        });
+    }
+    
+    UIImageView *selectedImageView = (UIImageView*)[cell viewWithTag:1337];
+    
+    if ([selectedPhotos containsObject:asset]) {
+        
+        if(selectedImageView == nil) {
+            selectedImageView = [[UIImageView alloc] init];
+            [selectedImageView setFrame:CGRectMake(95, 5, 25, 25)];
+            [selectedImageView setTag:1337];
+            [cell addSubview:selectedImageView];
+        }
+        
+        [selectedImageView setImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark-Selected.png"]];   
+    }else {
+        if (selectedImageView) {
+            [selectedImageView setImage:nil];
+            // UIImageView *sel = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark.png"]];
+        }
+    }
     
     return cell;
 }
@@ -212,7 +256,7 @@
     } else {
         [selectedPhotos addObject:asset];
     }
-    [collectionView reloadData];
+    [collectionView reloadItemsAtIndexPaths:@[indexPath]];
     [self updateButtons];
 }
 
@@ -384,7 +428,13 @@
         [assetslibrary assetForURL:url
                        resultBlock:resultblock
                       failureBlock:failureblock];
-        
+    }else {
+        [picker dismissViewControllerAnimated:YES completion:^{
+            if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
+                [delegate imagePicker:self didSelectImages:@[chosenImage] fromSource:self.selectedSourceType];
+            }
+            [self dismissAnimated:YES];
+        }];
     }
 }
 
