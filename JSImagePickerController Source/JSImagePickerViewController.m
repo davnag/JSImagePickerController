@@ -303,13 +303,14 @@
             UIImage *image = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
             [images addObject:image];
         }
-        if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:)]) {
-            [delegate imagePicker:self didSelectImages:images];
+        if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
+            [delegate imagePicker:self didSelectImages:images fromSource:self.selectedSourceType];
         }
         
         [self dismissAnimated:YES];
         return;
     }
+    
     UIImagePickerController *picker = [[UIImagePickerController alloc] init];
     picker.delegate = self;
     picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
@@ -341,8 +342,8 @@
             metaData.location = location;
             
             [picker dismissViewControllerAnimated:YES completion:^{
-                if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:metaData:)]) {
-                    [delegate imagePicker:self didSelectImages:@[chosenImage] metaData:metaData];
+                if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:metaData:fromSource:)]) {
+                    [delegate imagePicker:self didSelectImages:@[chosenImage] metaData:metaData fromSource:self.selectedSourceType];
                 }
                 [self dismissAnimated:YES];
             }];
@@ -352,8 +353,8 @@
         ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
         {
             [picker dismissViewControllerAnimated:YES completion:^{
-                if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:)]) {
-                    [delegate imagePicker:self didSelectImages:@[chosenImage]];
+                if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
+                    [delegate imagePicker:self didSelectImages:@[chosenImage] fromSource:self.selectedSourceType];
                 }
                 [self dismissAnimated:YES];
             }];
