@@ -187,12 +187,12 @@
     JSPhotoCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Cell" forIndexPath:indexPath];
     
     ALAsset *asset = self.assets[self.assets.count - 1 - indexPath.row];
-    NSString *path = [asset valueForProperty:ALAssetPropertyAssetURL];
+    NSURL *path = [asset valueForProperty:ALAssetPropertyAssetURL];
     
     UIImageView *imageView = [cell viewWithTag:1000];
     
     if(imageView == nil){
-        UIImageView *imageView = [[UIImageView alloc] init];
+        imageView = [[UIImageView alloc] init];
         [imageView setTag:1000];
         imageView.clipsToBounds = YES;
         imageView.contentMode = UIViewContentModeScaleAspectFill;
@@ -200,18 +200,18 @@
         [cell addSubview:imageView];
     }
     
-    UIImage *fullImage = [self.imagesCache objectForKey:path];
+    UIImage *fullImage = [self.imagesCache objectForKey:path.absoluteString];
     if(fullImage) {
         [imageView setImage:fullImage];
     }else {
         [imageView setImage:[UIImage imageWithCGImage:[asset thumbnail]]];
         
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            UIImage *tmpImage = [self.imagesCache objectForKey:path];
+            UIImage *tmpImage = [self.imagesCache objectForKey:path.absoluteString];
             
             if (tmpImage == nil) {
                 tmpImage = [[UIImage alloc] initWithCGImage:asset.defaultRepresentation.fullScreenImage];
-                [self.imagesCache setObject:tmpImage forKey:path];
+                [self.imagesCache setObject:tmpImage forKey:path.absoluteString];
             }
             
             if ([cell viewWithTag:1000] != nil){
@@ -236,7 +236,7 @@
             [cell addSubview:selectedImageView];
         }
         
-        [selectedImageView setImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark-Selected.png"]];   
+        [selectedImageView setImage:[UIImage imageNamed:@"PreviewSupplementaryView-Checkmark-Selected.png"]];
     }else {
         if (selectedImageView) {
             [selectedImageView setImage:nil];
@@ -249,7 +249,7 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+    [collectionView deselectItemAtIndexPath:indexPath animated:NO];
     ALAsset *asset = self.assets[self.assets.count - 1 - indexPath.row];
     if([selectedPhotos containsObject:asset]) {
         [selectedPhotos removeObject:asset];
