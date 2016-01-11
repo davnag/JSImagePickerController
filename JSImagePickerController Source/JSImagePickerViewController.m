@@ -345,7 +345,11 @@
         self.isVisible = YES;
 
         [self setTransitioningDelegate:transitionController];
-        self.modalPresentationStyle = UIModalPresentationCustom;
+        if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
+            self.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+        } else {
+            self.modalPresentationStyle = UIModalPresentationCustom;
+        }
         [controller presentViewController:self animated:NO completion:nil];
 
         if (animated) {
