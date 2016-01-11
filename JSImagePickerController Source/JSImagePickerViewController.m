@@ -294,21 +294,36 @@
         picker.delegate = self;
         picker.sourceType = UIImagePickerControllerSourceTypeCamera;
         picker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeImage, nil];
+        picker.allowsEditing = YES;
         self.selectedSourceType = picker.sourceType;
         [self presentViewController:picker animated:YES completion:nil];
     }
 }
 
-- (void)selectFromLibraryWasPressed
-{
+- (void)selectFromLibraryWasPressed {
     if (selectedPhotos.count > 0) {
-        NSMutableArray *images = [NSMutableArray new];
-        for (ALAsset *asset in selectedPhotos) {
+        if(selectedPhotos.count == 1) {
+            ALAsset *asset = selectedPhotos.firstObject;
             UIImage *image = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
-            [images addObject:image];
+            NSDate* date = [asset valueForProperty:ALAssetPropertyDate];
+            CLLocation *location = [asset valueForProperty:ALAssetPropertyLocation];
+            
+            PhotoMetadata *metaData = [[PhotoMetadata alloc] init];
+            metaData.date = date;
+            metaData.location = location;
+            if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:metaData:fromSource:)]) {
+                [delegate imagePicker:self didSelectImages:@[image] metaData:metaData fromSource:self.selectedSourceType];
+            }
         }
-        if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
-            [delegate imagePicker:self didSelectImages:images fromSource:self.selectedSourceType];
+        else {
+            NSMutableArray *images = [NSMutableArray new];
+            for (ALAsset *asset in selectedPhotos) {
+                UIImage *image = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
+                [images addObject:image];
+            }
+            if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
+                [delegate imagePicker:self didSelectImages:images fromSource:self.selectedSourceType];
+            }
         }
         
         [self dismissAnimated:YES];
@@ -319,6 +334,7 @@
     picker.delegate = self;
     picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     picker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeImage, nil];
+    picker.allowsEditing = YES;
     self.selectedSourceType = picker.sourceType;
     [self presentViewController:picker animated:YES completion:nil];
 }
@@ -330,8 +346,6 @@
         chosenImage = (UIImage*) [info valueForKey:UIImagePickerControllerOriginalImage];
 
     if ([picker sourceType] == UIImagePickerControllerSourceTypePhotoLibrary || [picker sourceType] ==UIImagePickerControllerSourceTypeSavedPhotosAlbum) {
-        // We'll store the info to use in another function later
-        
         // Get the asset url
         NSURL *url = [info objectForKey:@"UIImagePickerControllerReferenceURL"];
         
