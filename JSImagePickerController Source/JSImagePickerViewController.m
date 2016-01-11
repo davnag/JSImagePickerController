@@ -43,6 +43,8 @@
 @property(nonatomic, strong) NSMutableArray *assets;
 @property(nonatomic, strong) NSMutableArray *selectedPhotos;
 
+@property (nonatomic, readwrite) UIImagePickerControllerSourceType selectedSourceType;
+
 @end
 
 @implementation JSImagePickerViewController
@@ -65,7 +67,9 @@
 {
     self.view.backgroundColor = [UIColor clearColor];
     self.window = [UIApplication sharedApplication].keyWindow;
-
+    
+    self.selectedSourceType = -1;
+    
     self.imagePickerFrame = CGRectMake(0, [UIScreen mainScreen].bounds.size.height - imagePickerHeight, [UIScreen mainScreen].bounds.size.width, imagePickerHeight);
     self.hiddenFrame = CGRectMake(0, [UIScreen mainScreen].bounds.size.height, [UIScreen mainScreen].bounds.size.width, imagePickerHeight);
     self.imagePickerView = [[UIView alloc] initWithFrame:self.hiddenFrame];
@@ -286,7 +290,7 @@
         picker.delegate = self;
         picker.sourceType = UIImagePickerControllerSourceTypeCamera;
         picker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeImage, nil];
-
+        self.selectedSourceType = picker.sourceType;
         [self presentViewController:picker animated:YES completion:nil];
     }
 }
@@ -310,24 +314,63 @@
     picker.delegate = self;
     picker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     picker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeImage, nil];
-
+    self.selectedSourceType = picker.sourceType;
     [self presentViewController:picker animated:YES completion:nil];
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    UIImage *chosenImage = info[UIImagePickerControllerOriginalImage];
+    UIImage *chosenImage = (UIImage*) [info valueForKey:UIImagePickerControllerEditedImage];
+    if(!chosenImage)
+        chosenImage = (UIImage*) [info valueForKey:UIImagePickerControllerOriginalImage];
 
-    [picker dismissViewControllerAnimated:YES completion:^{
-        if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:)]) {
-            [delegate imagePicker:self didSelectImages:@[chosenImage]];
-        }
-        [self dismissAnimated:YES];
-    }];
+    if ([picker sourceType] == UIImagePickerControllerSourceTypePhotoLibrary || [picker sourceType] ==UIImagePickerControllerSourceTypeSavedPhotosAlbum) {
+        // We'll store the info to use in another function later
+        
+        // Get the asset url
+        NSURL *url = [info objectForKey:@"UIImagePickerControllerReferenceURL"];
+        
+        // We need to use blocks. This block will handle the ALAsset that's returned:
+        ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *asset)
+        {
+            NSDate* date = [asset valueForProperty:ALAssetPropertyDate];
+            CLLocation *location = [asset valueForProperty:ALAssetPropertyLocation];
+            
+            PhotoMetadata *metaData = [[PhotoMetadata alloc] init];
+            metaData.date = date;
+            metaData.location = location;
+            
+            [picker dismissViewControllerAnimated:YES completion:^{
+                if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:metaData:)]) {
+                    [delegate imagePicker:self didSelectImages:@[chosenImage] metaData:metaData];
+                }
+                [self dismissAnimated:YES];
+            }];
+            
+        };
+        // This block will handle errors:
+        ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
+        {
+            [picker dismissViewControllerAnimated:YES completion:^{
+                if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:)]) {
+                    [delegate imagePicker:self didSelectImages:@[chosenImage]];
+                }
+                [self dismissAnimated:YES];
+            }];
+        };
+
+        // Use the url to get the asset from ALAssetsLibrary,
+        // the blocks that we just created will handle results
+        ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+        [assetslibrary assetForURL:url
+                       resultBlock:resultblock
+                      failureBlock:failureblock];
+        
+    }
 }
 
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
-{
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    self.selectedSourceType = -1;
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 

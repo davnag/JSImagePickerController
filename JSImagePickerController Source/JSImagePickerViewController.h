@@ -7,11 +7,21 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <CoreLocation/CoreLocation.h>
+
+@interface PhotoMetadata : NSObject
+
+@property(nonatomic, strong) NSDate *date;
+@property(nonatomic, strong) CLLocation *location;
+
+@end
 
 @class JSImagePickerViewController;
 @protocol JSImagePickerViewControllerDelegate <NSObject>
 
 - (void)imagePicker:(JSImagePickerViewController *)imagePicker didSelectImages:(NSArray *)images;
+
+- (void)imagePicker:(JSImagePickerViewController *)imagePicker didSelectImages:(NSArray *)images metaData:(PhotoMetadata*)metadata;
 
 @optional
 
@@ -58,3 +68,4 @@
 @interface JSPhotoCell : UICollectionViewCell
 
 @end
+
