@@ -118,17 +118,17 @@
     UIFont *btnFont = [UIFont systemFontOfSize:19.0];
 
     self.photoLibraryBtn = [[UIButton alloc] initWithFrame:libraryBtnFrame];
-    [self.photoLibraryBtn setTitle:@"Photo Library" forState:UIControlStateNormal];
+    [self.photoLibraryBtn setTitle:NSLocalizedString(@"Photo Library", nil) forState:UIControlStateNormal];
     self.photoLibraryBtn.titleLabel.font = btnFont;
     [self.photoLibraryBtn addTarget:self action:@selector(selectFromLibraryWasPressed) forControlEvents:UIControlEventTouchUpInside];
 
     self.cameraBtn = [[UIButton alloc] initWithFrame:cameraBtnFrame];
-    [self.cameraBtn setTitle:@"Take Photo" forState:UIControlStateNormal];
+    [self.cameraBtn setTitle:NSLocalizedString(@"Take Photo", nil) forState:UIControlStateNormal];
     self.cameraBtn.titleLabel.font = btnFont;
     [self.cameraBtn addTarget:self action:@selector(takePhotoWasPressed) forControlEvents:UIControlEventTouchUpInside];
 
     self.cancelBtn = [[UIButton alloc] initWithFrame:cancelBtnFrame];
-    [self.cancelBtn setTitle:@"Cancel" forState:UIControlStateNormal];
+    [self.cancelBtn setTitle:NSLocalizedString(@"Cancel", nil) forState:UIControlStateNormal];
     self.cancelBtn.titleLabel.font = btnFont;
     [self.cancelBtn addTarget:self action:@selector(dismiss) forControlEvents:UIControlEventTouchUpInside];
 
@@ -208,9 +208,9 @@
 
 -(void)updateButtons {
     if (selectedPhotos.count > 0) {
-        [self.photoLibraryBtn setTitle:[NSString stringWithFormat:@"Send %lu photos", (unsigned long)selectedPhotos.count] forState:UIControlStateNormal];
+        [self.photoLibraryBtn setTitle:[NSString stringWithFormat:NSLocalizedString(@"Select %lu photos", nil), (unsigned long)selectedPhotos.count] forState:UIControlStateNormal];
     } else {
-        [self.photoLibraryBtn setTitle:@"Image library" forState:UIControlStateNormal];
+        [self.photoLibraryBtn setTitle:NSLocalizedString(@"Image library", nil) forState:UIControlStateNormal];
     }
 }
 
@@ -271,10 +271,10 @@
 {
     if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
 
-        UIAlertView *myAlertView = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                              message:@"Device has no camera"
+        UIAlertView *myAlertView = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Error", nil)
+                                                              message:NSLocalizedString(@"Device has no camera", nil)
                                                              delegate:nil
-                                                    cancelButtonTitle:@"OK"
+                                                    cancelButtonTitle:NSLocalizedString(@"OK", nil)
                                                     otherButtonTitles:nil];
 
         [myAlertView show];
