@@ -428,7 +428,7 @@
 
         // Use the url to get the asset from ALAssetsLibrary,
         // the blocks that we just created will handle results
-        ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+        ALAssetsLibrary* assetslibrary = [JSImagePickerViewController defaultAssetsLibrary];
         [assetslibrary assetForURL:url
                        resultBlock:resultblock
                       failureBlock:failureblock];
