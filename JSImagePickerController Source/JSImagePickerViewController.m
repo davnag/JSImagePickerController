@@ -358,6 +358,8 @@
             metaData.location = location;
             if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:metaData:fromSource:)]) {
                 [delegate imagePicker:self didSelectImages:@[image] metaData:metaData fromSource:self.selectedSourceType];
+            }else if([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
+                [delegate imagePicker:self didSelectImages:@[image] fromSource:self.selectedSourceType];
             }
         }
         else {
@@ -408,6 +410,8 @@
             [picker dismissViewControllerAnimated:YES completion:^{
                 if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:metaData:fromSource:)]) {
                     [delegate imagePicker:self didSelectImages:@[chosenImage] metaData:metaData fromSource:self.selectedSourceType];
+                }else if([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
+                    [delegate imagePicker:self didSelectImages:@[chosenImage] fromSource:self.selectedSourceType];
                 }
                 [self dismissAnimated:YES];
             }];
@@ -426,7 +430,7 @@
 
         // Use the url to get the asset from ALAssetsLibrary,
         // the blocks that we just created will handle results
-        ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc] init];
+        ALAssetsLibrary* assetslibrary = [JSImagePickerViewController defaultAssetsLibrary];
         [assetslibrary assetForURL:url
                        resultBlock:resultblock
                       failureBlock:failureblock];
