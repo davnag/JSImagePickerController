@@ -348,7 +348,8 @@
     if (selectedPhotos.count > 0) {
         if(selectedPhotos.count == 1) {
             ALAsset *asset = selectedPhotos.firstObject;
-            UIImage *image = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
+            ALAssetRepresentation *defaultRep = [asset defaultRepresentation];
+            UIImage* image = [UIImage imageWithCGImage:[defaultRep fullScreenImage] scale:[defaultRep scale] orientation:0];
             NSDate* date = [asset valueForProperty:ALAssetPropertyDate];
             CLLocation *location = [asset valueForProperty:ALAssetPropertyLocation];
             
@@ -362,7 +363,8 @@
         else {
             NSMutableArray *images = [NSMutableArray new];
             for (ALAsset *asset in selectedPhotos) {
-                UIImage *image = [UIImage imageWithCGImage:[[asset defaultRepresentation] fullResolutionImage]];
+                ALAssetRepresentation *defaultRep = [asset defaultRepresentation];
+                UIImage* image = [UIImage imageWithCGImage:[defaultRep fullScreenImage] scale:[defaultRep scale] orientation:0];
                 [images addObject:image];
             }
             if ([delegate respondsToSelector:@selector(imagePicker:didSelectImages:fromSource:)]) {
